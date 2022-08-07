@@ -1,0 +1,3 @@
+yfinance==0.1.74
+lxml==4.9.1
+multitasking==0.0.11
