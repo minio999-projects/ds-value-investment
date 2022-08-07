@@ -135,3 +135,6 @@ data/*
 .jupyter
 .local
 .bash_history
+
+# vs code
+.vscode
