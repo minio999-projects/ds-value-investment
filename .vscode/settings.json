@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 30432,
+            "driver": "PostgreSQL",
+            "name": "ds-value-investment",
+            "username": "postgres",
+            "database": "postgresdb",
+            "password": "root"
+        }
+    ]
+}
