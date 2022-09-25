@@ -1,161 +1,205 @@
+-- To Do
+-- Made database user with permission to use only those procedures
+
 create
 or replace procedure insert_to_company_value_investment_score (
-  _unit_price float,
-  _share float,
-  _price float,
-  _earnings float,
-  _indicator float
-) language plpgsql as $$
+  l_unit_price float,
+  l_share float,
+  l_price float,
+  l_earnings float,
+  l_indicator float,
+  l_measurement_date_of_value_investment_score date
+) as $$
+<<insert_to_company_value_investment_score>>
 begin
-    INSERT INTO company_value_investment_score(unit_price, share, price, earnings, indicator)
-    VALUES (_unit_price, _share, _price, _earnings, _indicator);
-end;
-$$;
+    INSERT INTO company_value_investment_score(unit_price, share, price, earnings, indicator, measurement_date_of_value_investment_score)
+    VALUES (l_unit_price, l_share, l_price, l_earnings, l_indicator, l_measurement_date_of_value_investment_score);
+end insert_to_company_value_investment_score;
+$$ language plpgsql;
 
 -- CALL insert_to_company_value_investment_score(1,1,1,1,1)
 create
 or replace procedure insert_to_company_base_info (
-  _companyID int,
-  _ticker varchar,
-  _sector varchar,
-  _country varchar,
-  _industry varchar,
-  _shortName varchar,
-  _market varchar
-) language plpgsql as $$
+  l_company_id int,
+  l_ticker varchar,
+  l_sector varchar,
+  l_country varchar,
+  l_industry varchar,
+  l_short_name varchar,
+  l_market varchar
+) as $$
+<<insert_to_company_base_info>>
 begin
-    INSERT INTO company_base_info(companyid, ticker, sector, country, industry, shortName, market)
-    SELECT *
+    INSERT INTO company_base_info(company_id, ticker, sector, country, industry, short_name, market)
+    SELECT company_id, ticker, sector, country, industry, short_name, market
     FROM (
-        VALUES (_companyID, _ticker, _sector, _country, _industry, _shortName, _market)
-	) as cbi(companyid, ticker, sector, country, industry, shortName, market)
+        VALUES (l_company_id, l_ticker, l_sector, l_country, l_industry, l_short_name, l_market)
+	) as cbi(company_id, ticker, sector, country, industry, short_name, market)
     WHERE EXISTS (
         SELECT FROM company_value_investment_score as cvis
-	    WHERE cvis.CompanyID = cbi.CompanyID
+	    WHERE cvis.company_id = cbi.company_id
     );
-end;
-$$;
+end insert_to_company_base_info;
+$$ language plpgsql;
 
 -- CALL insert_to_company_base_info(123,'1','1','1','1','1', '1');
 create
 or replace procedure insert_to_company_financial_info (
-  _companyID int,
-  _ebitdaMargins float,
-  _profitMargins float,
-  _grossMargins float,
-  _operatingCashflow int,
-  _revenueGrowth float,
-  _operatingMargins float,
-  _ebitda float,
-  _freeCashflow float,
-  _earningsGrowth float,
-  _totalCash float,
-  _totalDebt float,
-  _totalCashPerShare float,
-  _financialCurrency varchar(3),
-  _sharesOutstanding_all_shares float
-) language plpgsql as $$
+  l_company_id int,
+  l_ebitda_margins float,
+  l_profit_margins float,
+  l_gross_margins float,
+  l_operating_cashflow int,
+  l_revenue_growth float,
+  l_operating_margins float,
+  l_ebitda float,
+  l_free_cashflow float,
+  l_earnings_growth float,
+  l_total_cash float,
+  l_total_debt float,
+  l_total_cash_per_share float,
+  l_financial_currency varchar(3),
+  l_shares_outstanding_all_shares float
+) as $$
+<< insert_to_company_financial_info>>
 begin
-    INSERT INTO company_financial_info(companyID, ebitdaMargins, profitMargins, grossMargins, operatingCashflow, revenueGrowth, operatingMargins, ebitda, freeCashflow, earningsGrowth, totalCash, totalDebt, totalCashPerShare, financialCurrency, sharesOutstanding_all_shares)
-    SELECT *
+    INSERT INTO company_financial_info(
+        company_id, ebitda_margins, profit_margins, gross_margins, operating_cashflow, revenue_growth, operating_margins, 
+        ebitda, free_cashflow, earnings_growth, total_cash, total_debt, total_cash_per_share, financial_currency, shares_outstanding_all_shares
+    )
+    SELECT company_id, ebitda_margins, profit_margins, gross_margins, operating_cashflow, revenue_growth, operating_margins, 
+        ebitda, free_cashflow, earnings_growth, total_cash, total_debt, total_cash_per_share, financial_currency, shares_outstanding_all_shares
     FROM (
-        VALUES (_companyID ,_ebitdaMargins, _profitMargins, _grossMargins, _operatingCashflow, _revenueGrowth, _operatingMargins, _ebitda, _freeCashflow, _earningsGrowth, _totalCash, _totalDebt, _totalCashPerShare, _financialCurrency, _sharesOutstanding_all_shares )
-    ) as cfi(companyID, ebitdaMargins, profitMargins, grossMargins, operatingCashflow, revenueGrowth, operatingMargins, ebitda, freeCashflow, earningsGrowth, totalCash, totalDebt, totalCashPerShare, financialCurrency, sharesOutstanding_all_shares)
+        VALUES (
+            l_company_id ,l_ebitda_margins, l_profit_margins, l_gross_margins, l_operating_cashflow, l_revenue_growth, l_operating_margins, l_ebitda, 
+            l_free_cashflow, l_earnings_growth, l_total_cash, l_total_debt, l_total_cash_per_share, l_financial_currency, l_shares_outstanding_all_shares
+        )
+    ) as cfi(company_id, ebitda_margins, profit_margins, gross_margins, operating_cashflow, revenue_growth, operating_margins, 
+        ebitda, free_cashflow, earnings_growth, total_cash, total_debt, total_cash_per_share, financial_currency, shares_outstanding_all_shares)
     WHERE EXISTS (
         SELECT FROM company_value_investment_score as cvis
-	    WHERE cvis.CompanyID = cfi.CompanyID
+	    WHERE cvis.company_id = cfi.company_id
     );
-end;
-$$;
+end insert_to_company_financial_info;
+$$ language plpgsql;
 
 -- CALL insert_to_company_financial_info(123,1,1,1,1,1,1,1,1,1,1,1,1, 'USD', 1)
 create
 or replace procedure insert_to_company_cashflow (
-  _companyID int,
-  _investments float,
-  _Issuance_Of_Stock float,
-  _date date,
-  _Net_Income float,
-  _change_in_cash float,
-  _Repurchase_of_stock float,
-  _Total_cashflows_from_investing_activities float
-) language plpgsql as $$
+  l_company_id int,
+  l_investments float,
+  l_issuance_of_stock float,
+  l_measurement_date date,
+  l_net_income float,
+  l_change_in_cash float,
+  l_repurchase_of_stock float,
+  l_total_cashflows_from_investing_activities float
+) as $$
+<<insert_to_company_cashflow>>
 begin
-    INSERT INTO company_cashflow(companyID, investments , Issuance_Of_Stock , "Date" , Net_Income , change_in_cash , Repurchase_of_stock , Total_cashflows_from_investing_activities)
-    SELECT *
+    INSERT INTO company_cashflow(company_id, investments , issuance_of_stock , measurement_date , net_income , change_in_cash ,
+        repurchase_of_stock , total_cashflows_from_investing_activities)
+    SELECT company_id, investments , issuance_of_stock , measurement_date , net_income , change_in_cash ,
+        repurchase_of_stock , total_cashflows_from_investing_activities
     FROM (
-        VALUES(_companyID, _investments , _Issuance_Of_Stock , _date, _Net_Income , _change_in_cash , _Repurchase_of_stock , _Total_cashflows_from_investing_activities )
-    ) as ccf(companyID, investments , Issuance_Of_Stock , "Date" , Net_Income , change_in_cash , Repurchase_of_stock , Total_cashflows_from_investing_activities )
+        VALUES(l_company_id, l_investments , l_issuance_of_stock , l_measurement_date, l_net_income , l_change_in_cash , l_repurchase_of_stock , l_total_cashflows_from_investing_activities)
+    ) as ccf(company_id, investments , issuance_of_stock , measurement_date, net_income , change_in_cash , repurchase_of_stock , total_cashflows_from_investing_activities)
     WHERE EXISTS (
         SELECT FROM company_value_investment_score as cvis
-	    WHERE cvis.CompanyID = ccf.CompanyID
+	    WHERE cvis.company_id = ccf.company_id
 );
-end;
-$$;
+end insert_to_company_cashflow;
+$$ language plpgsql ;
 
 -- CALL insert_to_company_cashflow(123,1,1,'01-01-2002',1,1,1,1)
 create
 or replace procedure insert_to_company_sustainability (
-  _companyID int,
-  _palmOil boolean,
-  _controversialWeapons boolean,
-  _gambling boolean,
-  _socialScore float,
-  _nuclear boolean,
-  _furLeather boolean,
-  _alcoholic boolean,
-  _gmo boolean,
-  _catholic boolean,
-  _peerCount int,
-  _governanceScore float,
-  _environmentPercentile float,
-  _animalTesting boolean,
-  _tobacco boolean,
-  _highestControversy int,
-  _coal boolean,
-  _pesticides boolean,
-  _adult boolean,
-  _percentile float,
-  _peerGroup varchar,
-  _smallArms boolean,
-  _environmentScore float,
-  _militaryContract boolean
-) language plpgsql as $$
+  l_company_id int,
+  l_palm_oil boolean,
+  l_controversial_weapons boolean,
+  l_gambling boolean,
+  l_social_score float,
+  l_nuclear boolean,
+  l_fur_leather boolean,
+  l_alcoholic boolean,
+  l_gmo boolean,
+  l_catholic boolean,
+  l_peer_count int,
+  l_governance_score float,
+  l_environment_percentile float,
+  l_animal_testing boolean,
+  l_tobacco boolean,
+  l_highest_controversy int,
+  l_coal boolean,
+  l_pesticides boolean,
+  l_adult boolean,
+  l_percentile float,
+  l_peer_group varchar,
+  l_small_arms boolean,
+  l_environment_score float,
+  l_military_contract boolean
+) as $$
+<<insert_to_company_sustainability>>
 begin
-    INSERT INTO company_sustainability(companyID, palmOil , controversialWeapons , gambling , socialScore , nuclear , furLeather , alcoholic , gmo , catholic , peerCount, governanceScore , environmentPercentile , animalTesting , tobacco , highestControversy , coal , pesticides , adult , percentile , peerGroup , smallArms , environmentScore , militaryContract )
-    SELECT *
+    INSERT INTO company_sustainability(
+        company_id, palm_oil, controversial_weapons, gambling, social_score, nuclear, fur_leather, alcoholic, gmo, catholic, peer_count,
+        governance_score, environment_percentile, animal_testing, tobacco, highest_controversy, coal, pesticides, adult, percentile, peer_group,
+        small_arms, environment_score, military_contract
+        )
+    SELECT company_id, palm_oil, controversial_weapons, gambling, social_score, nuclear, fur_leather, alcoholic, gmo, catholic, peer_count,
+        governance_score, environment_percentile, animal_testing, tobacco, highest_controversy, coal, pesticides, adult, percentile, peer_group,
+        small_arms, environment_score, military_contract
     FROM (
-        ALUES(_companyID, _palmOil, _controversialWeapons, _gambling, _socialScore, _nuclear, _furLeather, _alcoholic, _gmo, _catholic, _peerCount, _governanceScore, _environmentPercentile, _animalTesting, _tobacco, _highestControversy, _coal, _pesticides, _adult, _percentile, _peerGroup, _smallArms, _environmentScore, _militaryContract)
-    ) as css(companyID, palmOil , controversialWeapons , gambling , socialScore , nuclear , furLeather , alcoholic , gmo , catholic , peerCount, governanceScore , environmentPercentile , animalTesting , tobacco , highestControversy , coal , pesticides , adult , percentile , peerGroup , smallArms , environmentScore , militaryContract )
+        VALUES(
+            l_company_id, l_palm_oil, l_controversial_weapons, l_gambling, l_social_score, l_nuclear, l_fur_leather, l_alcoholic,
+            l_gmo, l_catholic, l_peer_count, l_governance_score, l_environment_percentile, l_animal_testing, l_tobacco, l_highest_controversy,
+            l_coal, l_pesticides, l_adult, l_percentile, l_peer_group, l_small_arms, l_environment_score, l_military_contract
+        )
+    ) as css(
+            company_id, palm_oil, controversial_weapons, gambling, social_score, nuclear, fur_leather, alcoholic, gmo, catholic, peer_count,
+        governance_score, environment_percentile, animal_testing, tobacco, highest_controversy, coal, pesticides, adult, percentile, peer_group,
+        small_arms, environment_score, military_contract
+        )
     WHERE EXISTS (
         SELECT FROM company_value_investment_score as cvis
-	    WHERE cvis.CompanyID = css.CompanyID
+	    WHERE cvis.company_id = css.company_id
     );
-end;
-$$;
+end insert_to_company_sustainability;
+$$ language plpgsql ;
 
 -- CALL insert_to_company_sustainability(123,True, True, True, 1, True, True, True, True, True, 2, 3, 4, True, True, 10, True, True, True, 12, 'idk', True, 10, True)
 create
 or replace procedure insert_to_company_financial_on_year_period (
-  _companyID int,
-  _Date_on_year_period date,
-  _Net_Income_on_year_period float,
-  _GrossProfit_on_year_period float,
-  _Ebit_on_year_period float,
-  _Total_Revenue_on_year_period float,
-  _Total_Operating_Expenses_on_year_period float
-) language plpgsql as $$
+  l_company_id int,
+  l_date_on_year_period date,
+  l_net_income_on_year_period float,
+  l_gross_profit_on_year_period float,
+  l_ebit_on_year_period float,
+  l_total_revenue_on_year_period float,
+  l_total_operating_expenses_on_year_period float
+) as $$
+<<insert_to_company_financial_on_year_period>>
 begin
-    INSERT INTO company_financial_on_year_period(companyID, Date_on_year_period, Net_Income_on_year_period, GrossProfit_on_year_period, Ebit_on_year_period, Total_Revenue_on_year_period, Total_Operating_Expenses_on_year_period)
-    SELECT * 
+    INSERT INTO company_financial_on_year_period(
+        company_id, date_on_year_period, net_income_on_year_period, gross_profit_on_year_period,
+        ebit_on_year_period, total_revenue_on_year_period, total_operating_expenses_on_year_period
+    )
+    SELECT company_id, date_on_year_period, net_income_on_year_period, gross_profit_on_year_period,
+        ebit_on_year_period, total_revenue_on_year_period, total_operating_expenses_on_year_period
     FROM (
-        VALUES(_companyID, _Date_on_year_period, _Net_Income_on_year_period, _GrossProfit_on_year_period, _Ebit_on_year_period, _Total_Revenue_on_year_period, _Total_Operating_Expenses_on_year_period)
-    ) as cfonyp(companyID, Date_on_year_period, Net_Income_on_year_period, GrossProfit_on_year_period, Ebit_on_year_period, Total_Revenue_on_year_period, Total_Operating_Expenses_on_year_period)
+        VALUES(
+            l_company_id, l_date_on_year_period, l_net_income_on_year_period, l_gross_profit_on_year_period, l_ebit_on_year_period,
+            l_total_revenue_on_year_period, l_total_operating_expenses_on_year_period
+        )
+    ) as cfonyp(
+        company_id, date_on_year_period, net_income_on_year_period, gross_profit_on_year_period,
+        ebit_on_year_period, total_revenue_on_year_period, total_operating_expenses_on_year_period
+        )
     WHERE EXISTS (
         SELECT FROM company_value_investment_score as cvis
-	    WHERE cvis.CompanyID = cfonyp.CompanyID
+	    WHERE cvis.company_id = cfonyp.company_id
     );
-end;
-$$;
+end insert_to_company_financial_on_year_period;
+$$ language plpgsql ;
 
 -- CALL insert_to_company_financial_on_year_period(123,'01-01-2002', 2, 3, 4,5 ,6)
